@@ -1,0 +1,15 @@
+Course Title: Sample RAG Course
+Course Link: https://example.com/sample-rag-course
+Course Instructor: Prof. AI Expert
+
+Lesson 0: Introduction to RAG
+Welcome to the course on Retrieval-Augmented Generation. This introductory lesson covers the basic concepts and architecture of RAG systems. We'll explore how RAG combines information retrieval with language generation to create more accurate and informative AI responses.
+
+Lesson 1: Vector Databases
+In this lesson, we dive deep into vector databases and embedding systems. Vector databases like ChromaDB store and retrieve information based on semantic similarity rather than exact keyword matching. This enables more intelligent and context-aware search capabilities.
+
+Lesson 2: AI Integration
+This lesson focuses on integrating AI models with RAG systems. We'll cover how to connect language models like Claude to your retrieval system, handle tool calling, and manage conversation context for better user experiences.
+
+Lesson 3: Advanced Techniques
+Advanced RAG techniques including chunk optimization, query enhancement, and source attribution. We'll learn how to create hyperlinked sources, manage duplicate content, and implement sophisticated search filtering mechanisms.
