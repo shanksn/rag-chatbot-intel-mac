@@ -5,7 +5,7 @@ const API_URL = '/api';
 let currentSessionId = null;
 
 // DOM elements
-let chatMessages, chatInput, sendButton, totalCourses, courseTitles, newChatButton;
+let chatMessages, chatInput, sendButton, totalCourses, courseTitles, newChatButton, themeToggle;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -16,10 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
     totalCourses = document.getElementById('totalCourses');
     courseTitles = document.getElementById('courseTitles');
     newChatButton = document.getElementById('newChatButton');
+    themeToggle = document.getElementById('themeToggle');
     
     setupEventListeners();
     createNewSession();
     loadCourseStats();
+    initializeToggle();
 });
 
 // Event Listeners
@@ -32,6 +34,12 @@ function setupEventListeners() {
     
     // New Chat button
     newChatButton.addEventListener('click', clearCurrentChat);
+    
+    // Theme Toggle button
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+        themeToggle.addEventListener('keydown', handleToggleKeydown);
+    }
     
     // Suggested questions
     document.querySelectorAll('.suggested-item').forEach(button => {
@@ -74,7 +82,10 @@ async function sendMessage() {
             })
         });
 
-        if (!response.ok) throw new Error('Query failed');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Query failed (${response.status}): ${errorText}`);
+        }
 
         const data = await response.json();
         
@@ -88,6 +99,7 @@ async function sendMessage() {
         addMessage(data.answer, 'assistant', data.sources);
 
     } catch (error) {
+        console.error('Query error:', error);
         // Replace loading message with error
         loadingMessage.remove();
         addMessage(`Error: ${error.message}`, 'assistant');
@@ -221,5 +233,86 @@ async function loadCourseStats() {
         if (courseTitles) {
             courseTitles.innerHTML = '<span class="error">Failed to load courses</span>';
         }
+    }
+}
+
+// Toggle Button Functions
+function toggleTheme() {
+    const currentState = themeToggle.getAttribute('aria-checked') === 'true';
+    const newState = !currentState;
+    
+    // Update ARIA state
+    themeToggle.setAttribute('aria-checked', newState.toString());
+    
+    // Update label for screen readers
+    const label = newState ? 'Switch to dark theme' : 'Switch to light theme';
+    themeToggle.setAttribute('aria-label', label);
+    
+    // Toggle the actual theme
+    document.body.classList.toggle('light-theme', newState);
+    
+    // Save theme preference to localStorage
+    localStorage.setItem('theme', newState ? 'light' : 'dark');
+    
+    console.log(`Theme toggled to: ${newState ? 'light' : 'dark'} theme`);
+    
+    // Announce the change to screen readers
+    announceToggleState(newState);
+}
+
+function handleToggleKeydown(event) {
+    // Handle Space and Enter keys for accessibility
+    if (event.key === ' ' || event.key === 'Enter') {
+        event.preventDefault();
+        toggleTheme();
+    }
+    
+    // Handle arrow keys for additional accessibility
+    if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        if (themeToggle.getAttribute('aria-checked') === 'true') {
+            toggleTheme();
+        }
+    }
+    
+    if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        if (themeToggle.getAttribute('aria-checked') === 'false') {
+            toggleTheme();
+        }
+    }
+}
+
+function announceToggleState(isOn) {
+    // Create a temporary element to announce the state change to screen readers
+    const announcement = document.createElement('div');
+    announcement.setAttribute('aria-live', 'polite');
+    announcement.setAttribute('aria-atomic', 'true');
+    announcement.className = 'sr-only';
+    announcement.textContent = `Theme switched to ${isOn ? 'light' : 'dark'} mode`;
+    
+    document.body.appendChild(announcement);
+    
+    // Remove the announcement element after it's been read
+    setTimeout(() => {
+        document.body.removeChild(announcement);
+    }, 1000);
+}
+
+// Initialize toggle state
+function initializeToggle() {
+    if (themeToggle) {
+        // Check for saved theme preference or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isLightTheme = savedTheme === 'light' || (!savedTheme && !prefersDark);
+        
+        // Set initial state
+        themeToggle.setAttribute('aria-checked', isLightTheme.toString());
+        const label = isLightTheme ? 'Switch to dark theme' : 'Switch to light theme';
+        themeToggle.setAttribute('aria-label', label);
+        
+        // Apply the theme
+        document.body.classList.toggle('light-theme', isLightTheme);
     }
 }

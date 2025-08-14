@@ -97,6 +97,28 @@ class VectorStore:
         except Exception as e:
             return SearchResults.empty(f"Search error: {str(e)}")
     
+    def search_course_catalog(self, course_name: str, max_results: int = 5) -> 'SearchResults':
+        """
+        Search the course catalog for courses matching the given name.
+        
+        Args:
+            course_name: Course name or partial name to search for
+            max_results: Maximum number of results to return
+            
+        Returns:
+            SearchResults object with course metadata
+        """
+        try:
+            results = self.course_catalog.query(
+                query_texts=[course_name],
+                n_results=max_results
+            )
+            
+            # Convert to SearchResults format
+            return SearchResults.from_chroma(results)
+        except Exception as e:
+            return SearchResults.empty(f"Course catalog search error: {str(e)}")
+    
     def _resolve_course_name(self, course_name: str) -> Optional[str]:
         """Use vector search to find best matching course by name"""
         try:
